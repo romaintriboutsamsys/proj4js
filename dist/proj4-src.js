@@ -229,7 +229,7 @@
     var ENDED = -1;
     var whitespace = /\s/;
     var latin = /[A-Za-z]/;
-    var keyword = /[A-Za-z84]/;
+    var keyword = /[A-Za-z84_]/;
     var endThings = /[,\]]/;
     var digets = /[\d\.E\-\+]/;
     // const ignoredChar = /[\s_\-\/\(\)]/g;
@@ -4238,7 +4238,6 @@
     };
 
     function init$10() {
-      
       //double lat0;                    /* the reference latitude               */
       //double long0;                   /* the reference longitude              */
       //double lat1;                    /* first standard parallel              */
@@ -4247,7 +4246,7 @@
       //double r_min;                   /* minor axis                           */
       //double false_east;              /* x offset in meters                   */
       //double false_north;             /* y offset in meters                   */
-      
+
       //the above value can be set with proj4.defs
       //example: proj4.defs("EPSG:2154","+proj=lcc +lat_1=49 +lat_2=44 +lat_0=46.5 +lon_0=3 +x_0=700000 +y_0=6600000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs");
 
@@ -4281,8 +4280,7 @@
 
       if (Math.abs(this.lat1 - this.lat2) > EPSLN) {
         this.ns = Math.log(ms1 / ms2) / Math.log(ts1 / ts2);
-      }
-      else {
+      } else {
         this.ns = sin1;
       }
       if (isNaN(this.ns)) {
@@ -4298,7 +4296,6 @@
     // Lambert Conformal conic forward equations--mapping lat,long to x,y
     // -----------------------------------------------------------------
     function forward$9(p) {
-
       var lon = p.x;
       var lat = p.y;
 
@@ -4312,8 +4309,7 @@
       if (con > EPSLN) {
         ts = tsfnz(this.e, lat, Math.sin(lat));
         rh1 = this.a * this.f0 * Math.pow(ts, this.ns);
-      }
-      else {
+      } else {
         con = lat * this.ns;
         if (con <= 0) {
           return null;
@@ -4330,32 +4326,29 @@
     // Lambert Conformal Conic inverse equations--mapping x,y to lat/long
     // -----------------------------------------------------------------
     function inverse$9(p) {
-
       var rh1, con, ts;
       var lat, lon;
       var x = (p.x - this.x0) / this.k0;
-      var y = (this.rh - (p.y - this.y0) / this.k0);
+      var y = this.rh - (p.y - this.y0) / this.k0;
       if (this.ns > 0) {
         rh1 = Math.sqrt(x * x + y * y);
         con = 1;
-      }
-      else {
+      } else {
         rh1 = -Math.sqrt(x * x + y * y);
         con = -1;
       }
       var theta = 0;
       if (rh1 !== 0) {
-        theta = Math.atan2((con * x), (con * y));
+        theta = Math.atan2(con * x, con * y);
       }
-      if ((rh1 !== 0) || (this.ns > 0)) {
+      if (rh1 !== 0 || this.ns > 0) {
         con = 1 / this.ns;
-        ts = Math.pow((rh1 / (this.a * this.f0)), con);
+        ts = Math.pow(rh1 / (this.a * this.f0), con);
         lat = phi2z(this.e, ts);
         if (lat === -9999) {
           return null;
         }
-      }
-      else {
+      } else {
         lat = -HALF_PI;
       }
       lon = adjust_lon(theta / this.ns + this.long0);
@@ -4370,14 +4363,16 @@
       "Lambert_Conformal_Conic",
       "Lambert_Conformal_Conic_1SP",
       "Lambert_Conformal_Conic_2SP",
-      "lcc"
+      "lcc",
+      "Lambert Conic Conformal (1SP)",
+      "Lambert Conic Conformal (2SP)",
     ];
 
     var lcc = {
       init: init$10,
       forward: forward$9,
       inverse: inverse$9,
-      names: names$11
+      names: names$11,
     };
 
     function init$11() {
@@ -7166,7 +7161,7 @@
     proj4$1.nadgrid = nadgrid;
     proj4$1.transform = transform;
     proj4$1.mgrs = mgrs;
-    proj4$1.version = '2.7.5';
+    proj4$1.version = '2.7.5-samsys';
     includedProjections(proj4$1);
 
     return proj4$1;
